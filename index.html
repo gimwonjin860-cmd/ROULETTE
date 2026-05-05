@@ -4,242 +4,364 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
-<title>오늘 어디 갈까 룰렛</title>
-<meta property="og:title" content="오늘 어디 갈까 룰렛">
-<meta property="og:description" content="문래 양키통닭 · 한강 여의나루 · 수원 행궁동 · 을지로 야장 · 홍대">
+<title>실내 vs 외부 데이트 배틀</title>
+<meta property="og:title" content="실내 vs 외부 데이트 배틀">
+<meta property="og:description" content="탭 배틀로 데이트 코스 결정하기 — 누가 이길까">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overscroll-behavior: none; }
-  body {
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    background: #0a0a0a;
-    color: #f5f5f5;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: max(env(safe-area-inset-top), 24px) 20px max(env(safe-area-inset-bottom), 24px);
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-    position: relative;
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(229,89,52,0.06) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.025 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    pointer-events: none;
-    z-index: 1;
-    mix-blend-mode: overlay;
-    opacity: 0.6;
-  }
-  .container { position: relative; z-index: 2; width: 100%; max-width: 420px; display: contents; }
-  .header { text-align: center; margin-top: 0.5rem; position: relative; z-index: 2; }
-  .label {
-    font-size: 10px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: #888;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  .title {
-    font-size: clamp(24px, 6vw, 28px);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    color: #fff;
-    line-height: 1.15;
-  }
-  .title .accent { color: #E55934; }
-  .wheel-container {
-    position: relative;
-    width: 100%;
-    max-width: 380px;
-    aspect-ratio: 1 / 1.18;
-    z-index: 2;
-  }
-  .wheel-svg { width: 100%; height: 100%; display: block; overflow: visible; }
-  .wheel-group {
-    transform-origin: 200px 220px;
-    transform-box: view-box;
-    transform: rotate(0deg);
-    transition: transform 5s cubic-bezier(0.16, 0.72, 0.18, 1);
-    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
-  }
-  .seg-text {
-    font-size: 13.5px;
-    font-weight: 700;
-    fill: white;
-    text-anchor: middle;
-    dominant-baseline: central;
-    pointer-events: none;
-    font-family: 'Pretendard', sans-serif;
-    letter-spacing: -0.01em;
-  }
-  .pointer-shape {
-    fill: #f5f5f5;
-    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.6));
-  }
-  .center-hub { fill: #1a1a1a; stroke: #2a2a2a; stroke-width: 1.5; }
-  .center-dot { fill: #f5f5f5; }
-  .footer { width: 100%; max-width: 380px; text-align: center; position: relative; z-index: 2; }
-  .result-label {
-    font-size: 10px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: #888;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  .result-text {
-    font-size: clamp(26px, 7vw, 32px);
-    font-weight: 800;
-    color: #fff;
-    min-height: 44px;
-    margin-bottom: 1.75rem;
-    letter-spacing: -0.025em;
-    transition: color 0.3s;
-  }
-  .result-text.idle { color: #666; font-weight: 500; font-size: 17px; min-height: 44px; line-height: 44px; letter-spacing: 0; }
-  .spin-btn {
-    width: 100%;
-    padding: 20px 32px;
-    font-size: 17px;
-    font-weight: 700;
-    border: none;
-    background: linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%);
-    color: #0a0a0a;
-    border-radius: 999px;
-    cursor: pointer;
-    font-family: 'Pretendard', sans-serif;
-    letter-spacing: -0.01em;
-    transition: transform 0.15s ease, opacity 0.2s;
-    -webkit-appearance: none;
-    box-shadow: 0 4px 24px rgba(255,255,255,0.08);
-  }
-  .spin-btn:active { transform: scale(0.97); }
-  .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  @keyframes pop {
-    0%   { transform: scale(0.7); opacity: 0; }
-    60%  { transform: scale(1.08); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .result-text.show { animation: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; width: 100%; overscroll-behavior: none; }
+body {
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0a0a0a;
+  color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 18px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  min-height: 100vh;
+}
+.bg-glow {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 0% 50%, rgba(229,89,52,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 100% 50%, rgba(61,165,217,0.10) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.header { text-align: center; margin-top: 4px; position: relative; z-index: 2; width: 100%; }
+.label {
+  font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: #888; margin-bottom: 8px; font-weight: 600;
+}
+.title { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; color: #fff; line-height: 1.15; }
+
+.vs-display {
+  display: flex; width: 100%; max-width: 380px;
+  margin: 20px 0 12px; align-items: center; justify-content: space-between;
+  position: relative; z-index: 2;
+}
+.team { flex: 1; text-align: center; }
+.team-name { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.team-name.indoor { color: #E55934; }
+.team-name.outdoor { color: #3DA5D9; }
+.vs-text { font-size: 13px; font-weight: 700; color: #555; padding: 0 8px; }
+
+.bar-container {
+  width: 100%; max-width: 380px;
+  position: relative; z-index: 2; margin: 4px 0 16px;
+}
+.bar-bg {
+  width: 100%; height: 56px;
+  background: #151515;
+  border-radius: 999px; overflow: hidden; position: relative;
+  border: 1px solid #2a2a2a;
+}
+.bar-indoor {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, #E55934 0%, #FF7A52 100%);
+  width: 50%;
+}
+.bar-outdoor {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  background: linear-gradient(270deg, #3DA5D9 0%, #6BC0E8 100%);
+  width: 50%;
+}
+.bar-center-marker {
+  position: absolute; top: -8px; bottom: -8px; left: 50%;
+  width: 3px; background: #f5f5f5;
+  -webkit-transform: translateX(-50%); transform: translateX(-50%);
+  border-radius: 2px; z-index: 3;
+}
+.pct-row {
+  display: flex; justify-content: space-between; width: 100%;
+  margin-top: 10px; font-size: 14px; font-weight: 700;
+}
+.pct-indoor { color: #E55934; }
+.pct-outdoor { color: #3DA5D9; }
+
+.timer {
+  font-size: 12px; color: #888; margin-bottom: 14px;
+  font-weight: 600; letter-spacing: 0.08em;
+  position: relative; z-index: 2;
+}
+
+.tap-zone {
+  flex: 1; width: 100%; max-width: 380px;
+  min-height: 180px; padding: 24px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
+  border: 2px solid #3DA5D9;
+  border-radius: 24px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; position: relative; z-index: 2;
+  -webkit-transition: -webkit-transform 0.05s ease, border-color 0.2s;
+  transition: transform 0.05s ease, border-color 0.2s;
+}
+.tap-zone:active { -webkit-transform: scale(0.97); transform: scale(0.97); }
+.tap-zone.disabled { opacity: 0.3; pointer-events: none; }
+.tap-label-small { font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: #888; margin-bottom: 8px; font-weight: 600; }
+.tap-label-big {
+  font-size: 30px; font-weight: 800; color: #3DA5D9;
+  letter-spacing: -0.02em;
+  -webkit-transition: -webkit-transform 0.08s ease;
+  transition: transform 0.08s ease;
+}
+.tap-hint { font-size: 12px; color: #666; margin-top: 10px; line-height: 1.4; text-align: center; }
+
+.start-btn, .restart-btn {
+  width: 100%; max-width: 380px;
+  padding: 18px 32px; font-size: 17px; font-weight: 700;
+  border: none; background: #f5f5f5; color: #0a0a0a;
+  border-radius: 999px; cursor: pointer;
+  font-family: inherit; letter-spacing: -0.01em;
+  -webkit-appearance: none; appearance: none;
+  margin-top: 14px; position: relative; z-index: 2;
+  -webkit-transition: -webkit-transform 0.15s; transition: transform 0.15s;
+}
+.start-btn:active, .restart-btn:active { -webkit-transform: scale(0.97); transform: scale(0.97); }
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85); z-index: 100;
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+}
+.modal-overlay.show { display: flex; }
+.modal-card {
+  background: #1a1a1a; border-radius: 24px;
+  padding: 40px 28px; text-align: center;
+  width: 100%; max-width: 360px;
+  border: 1px solid #2a2a2a;
+}
+.win-icon-circle {
+  width: 88px; height: 88px; margin: 0 auto 20px;
+  border-radius: 50%; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 44px; font-weight: 800; color: white;
+}
+.win-icon-circle.indoor { background: linear-gradient(135deg, #E55934, #FF7A52); }
+.win-icon-circle.outdoor { background: linear-gradient(135deg, #3DA5D9, #6BC0E8); }
+.win-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; letter-spacing: -0.025em; }
+.win-subtitle { font-size: 14px; color: #888; margin-bottom: 4px; }
+.win-result { font-size: 30px; font-weight: 800; margin: 8px 0 12px; letter-spacing: -0.025em; }
+.win-result.indoor { color: #E55934; }
+.win-result.outdoor { color: #3DA5D9; }
+.win-time { font-size: 13px; color: #666; margin-bottom: 24px; font-weight: 600; letter-spacing: 0.05em; }
+
+@-webkit-keyframes pop {
+  0%   { -webkit-transform: scale(0.6); opacity: 0; }
+  60%  { -webkit-transform: scale(1.08); }
+  100% { -webkit-transform: scale(1); opacity: 1; }
+}
+@keyframes pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.modal-card { -webkit-animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
 </style>
 </head>
 <body>
-  <div class="header">
-    <div class="label">오늘의 운명</div>
-    <div class="title">어디 갈까 <span class="accent">룰렛</span></div>
-  </div>
+<div class="bg-glow"></div>
 
-  <div class="wheel-container">
-    <svg class="wheel-svg" viewBox="0 0 400 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-      <g class="wheel-group" id="wheel"></g>
-      <circle class="center-hub" cx="200" cy="220" r="28"/>
-      <circle class="center-dot" cx="200" cy="220" r="5"/>
-      <path class="pointer-shape" d="M 200 60 L 184 28 L 216 28 Z"/>
-    </svg>
-  </div>
+<div class="header">
+  <div class="label">데이트 배틀</div>
+  <div class="title">실내 vs 외부</div>
+</div>
 
-  <div class="footer">
-    <div class="result-label">결과</div>
-    <div class="result-text idle" id="result-text">버튼을 눌러보셈</div>
-    <button class="spin-btn" id="spin-btn">돌리기</button>
+<div class="vs-display">
+  <div class="team"><div class="team-name indoor">실내데이트</div></div>
+  <div class="vs-text">VS</div>
+  <div class="team"><div class="team-name outdoor">외부데이트</div></div>
+</div>
+
+<div class="bar-container">
+  <div class="bar-bg">
+    <div class="bar-indoor" id="bar-indoor"></div>
+    <div class="bar-outdoor" id="bar-outdoor"></div>
+    <div class="bar-center-marker"></div>
   </div>
+  <div class="pct-row">
+    <span class="pct-indoor" id="pct-indoor">50%</span>
+    <span class="pct-outdoor" id="pct-outdoor">50%</span>
+  </div>
+</div>
+
+<div class="timer" id="timer-display">준비하셈</div>
+
+<div class="tap-zone" id="tap-zone">
+  <div class="tap-label-small">탭해서 응원하기</div>
+  <div class="tap-label-big" id="tap-big">시작하셈</div>
+  <div class="tap-hint" id="tap-hint">시작 버튼 누르면<br>6초 안에 외부데이트 채우기 도전</div>
+</div>
+
+<button class="start-btn" id="start-btn">시작하기</button>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-card">
+    <div class="win-icon-circle" id="win-icon">★</div>
+    <div class="win-title">축하합니다!</div>
+    <div class="win-subtitle">오늘의 데이트는</div>
+    <div class="win-result" id="win-result"></div>
+    <div class="win-time" id="win-time"></div>
+    <button class="restart-btn" id="restart-btn">다시 하기</button>
+  </div>
+</div>
 
 <script>
 (function(){
-  const items = [
-    { name: '문래 양키통닭', color: '#E55934' },
-    { name: '한강 여의나루', color: '#3DA5D9' },
-    { name: '수원 행궁동',   color: '#F4A535' },
-    { name: '을지로 야장',   color: '#7B61FF' },
-    { name: '홍대',         color: '#E94B7B' }
-  ];
-  const cx = 200, cy = 220, r = 170;
-  const n = items.length;
-  const segRad = Math.PI * 2 / n;
-  const startA = -Math.PI / 2 - segRad / 2;
-  const wheel = document.getElementById('wheel');
+  var position = 50;
+  var gameRunning = false;
+  var startTimestamp = null;
+  var lastFrame = null;
+  var rafId = null;
 
-  let html = '';
-  for (let i = 0; i < n; i++) {
-    const a1 = startA + i * segRad, a2 = a1 + segRad;
-    const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
-    const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
-    const path = 'M '+cx+' '+cy+' L '+x1.toFixed(2)+' '+y1.toFixed(2)+' A '+r+' '+r+' 0 0 1 '+x2.toFixed(2)+' '+y2.toFixed(2)+' Z';
-    const ta = a1 + segRad / 2;
-    const tr = r * 0.62;
-    const tx = cx + tr * Math.cos(ta);
-    const ty = cy + tr * Math.sin(ta);
-    let rot = (ta * 180 / Math.PI) + 90;
-    while (rot > 180) rot -= 360;
-    while (rot < -180) rot += 360;
-    if (rot > 90) rot -= 180;
-    if (rot < -90) rot += 180;
-    html += '<path d="'+path+'" fill="'+items[i].color+'" stroke="#0a0a0a" stroke-width="3" stroke-linejoin="round"/>';
-    html += '<text class="seg-text" x="'+tx.toFixed(2)+'" y="'+ty.toFixed(2)+'" transform="rotate('+rot.toFixed(2)+' '+tx.toFixed(2)+' '+ty.toFixed(2)+')">'+items[i].name+'</text>';
+  var AI_RATE = 8;
+  var TAP_BOOST = 2.5;
+
+  var barIndoor = document.getElementById('bar-indoor');
+  var barOutdoor = document.getElementById('bar-outdoor');
+  var pctIndoor = document.getElementById('pct-indoor');
+  var pctOutdoor = document.getElementById('pct-outdoor');
+  var timerDisplay = document.getElementById('timer-display');
+  var tapZone = document.getElementById('tap-zone');
+  var tapBig = document.getElementById('tap-big');
+  var tapHint = document.getElementById('tap-hint');
+  var startBtn = document.getElementById('start-btn');
+  var modal = document.getElementById('modal-overlay');
+  var winIcon = document.getElementById('win-icon');
+  var winResult = document.getElementById('win-result');
+  var winTime = document.getElementById('win-time');
+  var restartBtn = document.getElementById('restart-btn');
+
+  function updateBar() {
+    var indoorPct = 100 - position;
+    var outdoorPct = position;
+    barIndoor.style.width = indoorPct + '%';
+    barOutdoor.style.width = outdoorPct + '%';
+    pctIndoor.textContent = Math.round(indoorPct) + '%';
+    pctOutdoor.textContent = Math.round(outdoorPct) + '%';
   }
-  wheel.innerHTML = html;
 
-  const btn = document.getElementById('spin-btn');
-  const resultEl = document.getElementById('result-text');
-  let spinning = false;
-  let curRot = 0;
+  function startGame() {
+    position = 50;
+    gameRunning = true;
+    startTimestamp = null;
+    lastFrame = null;
+    tapZone.classList.remove('disabled');
+    tapBig.textContent = '탭! 탭! 탭!';
+    tapHint.textContent = '쉬지 말고 빠르게 누르셈';
+    startBtn.style.display = 'none';
+    timerDisplay.textContent = '진행 중...';
+    updateBar();
+    rafId = requestAnimationFrame(gameLoop);
+  }
 
-  btn.addEventListener('click', function () {
-    if (spinning) return;
-    spinning = true;
-    btn.disabled = true;
-    resultEl.classList.remove('show');
-    resultEl.classList.add('idle');
-    resultEl.textContent = '돌리는 중...';
+  function gameLoop(timestamp) {
+    if (!gameRunning) return;
+    if (startTimestamp === null) startTimestamp = timestamp;
+    if (lastFrame === null) lastFrame = timestamp;
+    var dt = timestamp - lastFrame;
+    lastFrame = timestamp;
+    position -= (AI_RATE / 1000) * dt;
+    if (position <= 0) { position = 0; updateBar(); endGame('indoor'); return; }
+    if (position >= 100) { position = 100; updateBar(); endGame('outdoor'); return; }
+    var elapsed = (timestamp - startTimestamp) / 1000;
+    timerDisplay.textContent = elapsed.toFixed(1) + 's';
+    updateBar();
+    rafId = requestAnimationFrame(gameLoop);
+  }
 
-    const win = Math.floor(Math.random() * n);
-    const segDeg = 360 / n;
-    const fullRot = 7 + Math.floor(Math.random() * 4);
-    const baseRot = curRot - (curRot % 360);
-    const jitter = (Math.random() - 0.5) * (segDeg * 0.6);
-    const newRot = baseRot + fullRot * 360 - win * segDeg + jitter;
+  function tap() {
+    if (!gameRunning) return;
+    position += TAP_BOOST;
+    if (position >= 100) { position = 100; updateBar(); endGame('outdoor'); return; }
+    updateBar();
+    tapBig.style.webkitTransform = 'scale(1.12)';
+    tapBig.style.transform = 'scale(1.12)';
+    setTimeout(function() {
+      tapBig.style.webkitTransform = 'scale(1)';
+      tapBig.style.transform = 'scale(1)';
+    }, 70);
+    try { if (navigator.vibrate) navigator.vibrate(15); } catch(e) {}
+  }
 
-    curRot = newRot;
-    wheel.style.transform = 'rotate(' + newRot.toFixed(2) + 'deg)';
+  function endGame(winner) {
+    gameRunning = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    tapZone.classList.add('disabled');
 
-    setTimeout(function () {
-      resultEl.classList.remove('idle');
-      resultEl.textContent = items[win].name;
-      resultEl.classList.add('show');
-      btn.textContent = '다시 돌리기';
-      spinning = false;
-      btn.disabled = false;
-      if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-    }, 5050);
-  });
+    var elapsedSec = startTimestamp ? ((performance.now() - startTimestamp) / 1000) : 0;
+    var elapsedStr = elapsedSec.toFixed(1) + '초';
+    var resultText = (winner === 'indoor') ? '실내데이트' : '외부데이트';
 
-  let lastTouch = 0;
-  document.addEventListener('touchend', function (e) {
-    const now = Date.now();
-    if (now - lastTouch <= 300) e.preventDefault();
+    if (winner === 'indoor') {
+      winIcon.textContent = '실';
+      winIcon.className = 'win-icon-circle indoor';
+      winResult.textContent = resultText;
+      winResult.className = 'win-result indoor';
+    } else {
+      winIcon.textContent = '외';
+      winIcon.className = 'win-icon-circle outdoor';
+      winResult.textContent = resultText;
+      winResult.className = 'win-result outdoor';
+    }
+    winTime.textContent = elapsedStr + ' 만에 결정';
+
+    submitToForm(resultText, elapsedStr);
+
+    setTimeout(function() {
+      modal.classList.add('show');
+      try { if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 120]); } catch(e) {}
+    }, 250);
+  }
+
+  function submitToForm(result, time) {
+    try {
+      var formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSenRRBnx0r5T7On2vdjTc9y4gbFzv0lsSu77Lek85Wgxejo_g/formResponse';
+      var formData = new FormData();
+      formData.append('entry.1521189206', result);
+      formData.append('entry.1599259705', time);
+      fetch(formUrl, { method: 'POST', mode: 'no-cors', body: formData }).catch(function(){});
+    } catch(e) {}
+  }
+
+  function resetGame() {
+    modal.classList.remove('show');
+    position = 50;
+    updateBar();
+    timerDisplay.textContent = '준비하셈';
+    tapBig.textContent = '시작하셈';
+    tapHint.innerHTML = '시작 버튼 누르면<br>6초 안에 외부데이트 채우기 도전';
+    startBtn.style.display = '';
+  }
+
+  startBtn.addEventListener('click', startGame);
+  tapZone.addEventListener('click', tap);
+  tapZone.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    tap();
+  }, { passive: false });
+  restartBtn.addEventListener('click', resetGame);
+
+  var lastTouch = 0;
+  document.addEventListener('touchend', function(e) {
+    var now = Date.now();
+    if (now - lastTouch <= 300) {
+      try { e.preventDefault(); } catch(err) {}
+    }
     lastTouch = now;
   }, { passive: false });
+
+  updateBar();
 })();
 </script>
 </body>
